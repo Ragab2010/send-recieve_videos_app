@@ -5,8 +5,36 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <ncurses.h>
 
-int main() {
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <video_path>" << std::endl;
+        return 1;
+    }
+
+    // Open and read the video file
+    std::ifstream video_file(argv[1], std::ios::binary);
+    if (!video_file) {
+        std::cerr << "Failed to open video file: " << argv[1] << std::endl;
+        return 1;
+    }
+
+    // Determine the total file size
+    video_file.seekg(0, std::ios::end);
+    int total_size = video_file.tellg();
+    video_file.seekg(0, std::ios::beg);
+
+    // Initialize ncurses
+    initscr();
+    cbreak();
+    noecho();
+    curs_set(0);
+    WINDOW *progress_win = newwin(3, 50, 1, 1);
+    box(progress_win, 0, 0);
+    refresh();
+    wrefresh(progress_win);
+
     // Create a socket
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -23,15 +51,9 @@ int main() {
     // Accept a connection from a client
     int client_socket = accept(server_socket, NULL, NULL);
 
-    // Open and read the video file
-    std::ifstream video_file("video.mp4", std::ios::binary);
-    if (!video_file) {
-        std::cerr << "Failed to open video file." << std::endl;
-        return 1;
-    }
-
     char buffer[1024];
     int bytes_read;
+    int total_sent = 0;
 
     while (!video_file.eof()) {
         // Wait for a synchronization signal from the client
@@ -42,11 +64,22 @@ int main() {
 
         // Send video data to the client
         send(client_socket, buffer, bytes_read, 0);
+        
+        total_sent += bytes_read;
+        
+        // Display progress
+        int percent = (total_sent * 100) / total_size;
+        wclear(progress_win);
+        box(progress_win, 0, 0);
+        mvwprintw(progress_win, 1, 1, "Progress: %d%%", percent);
+        wrefresh(progress_win);
     }
 
-    // Close the sockets when done
+    // Close the sockets and ncurses when done
     close(client_socket);
     close(server_socket);
+    delwin(progress_win);
+    endwin();
 
     return 0;
 }
