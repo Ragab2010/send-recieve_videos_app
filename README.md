@@ -1,4 +1,7 @@
 # Video Transfer Project
+<!--![Video Transfer Demo](sender_recieve.gif)
+-->
+<kbd><img src="sender_recieve.gif" width="900"></kbd>
 
 ## Description
 This project demonstrates a simple video transfer system between a server and a client using C++ and socket programming. The server sends a video file to the client, and the client receives and saves the video file. The code includes a user interface for displaying live progress using the ncurses library.
