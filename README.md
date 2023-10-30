@@ -48,3 +48,6 @@ project-directory/
     ```
     Replace /path/to/save/received_video.mp4 with the path and filename where you want to save the received video.
 
+## Notes
+- Make sure you have the ncurses library installed on your system for the user interface features.
+- The server and client should synchronize and transfer the video while displaying the progress using ncurses.
